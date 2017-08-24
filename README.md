@@ -1,112 +1,65 @@
 # utl_transpose_with_proc_report
 proc report can do more complex transposes than proc transpose?
 
-    ```  SAS Forum: making the same format in every dataset  ```
+    ```  T1007380 SAS-L Reshaping complex data using proc report  ```
     ```    ```
-    ```     Apply I template to mutiple SAS datasetsl  ```
+    ```      WORKING CODE (all of it)  ```
     ```    ```
-    ```     Great question!!  ```
+    ```         SAS Only  ```
     ```    ```
-    ```     WORKING CODE  ```
-    ```        SAS (WPS does not support DOSUBL - neither does SAS officially?)  ```
+    ```         Failed with WPS with this error  ```
+    ```         ERROR: Cannot use OUT= option if there is a BY clause  ```
     ```    ```
-    ```     1. DOSUBL COMPILE TIME  ```
-    ```           * get template format;  ```
-    ```           If _n_=0  ```
-    ```             proc contents data=work.template;  ```
-    ```             proc sql;  ```
-    ```              select catx(" ",variable,format) into :fmt separated by " "  ```
-    ```              from vars order by num;  ```
+    ```           proc report data=havsrt  nowd missing  ```
+    ```                  out=havrpt(  ```
+    ```                      rename=(  ```
+    ```                         _C1_= Estimate  ```
+    ```                         _C2_=StdErr  ```
+    ```                         _C3_= Probt  ```
+    ```                         _C4_=Race_Estimate  ```
+    ```                         _C5_=Race_StdErr  ```
+    ```                         _C6_=Race_Probt  ```
+    ```                         _C7_=COL1_Race_Estimate  ```
+    ```                         _C8_=COL1_Race_StdErr  ```
+    ```                         _C9_=COL1_Race_Probt));  ```
+    ```           by _name_;  ```
+    ```           cols effect, (estimate stderr probt);  ```
+    ```           define effect   / across;  ```
+    ```           define estimate / sum ;  ```
+    ```           define stderr   / sum ;  ```
+    ```           define probt    / sum ;  ```
     ```    ```
-    ```     2. MAINLINE (meta contains list of datasets)  ```
     ```    ```
-    ```           set meta;  ```
-    ```             call symputx('dsn',dsn);  ```
-    ```    ```
-    ```     3. DOSUBL  ```
-    ```          proc datasets lib=work;  ```
-    ```                modify &dsn;  ```
-    ```              format &fmt;  ```
-    ```    ```
-    ```     4. MAINLINE ( if error a window pops up asking if you want to continue)  ```
-    ```            *you could use Python tkinter for fancy interface;  ```
-    ```    ```
-    ```        if symget('rc_code') ne '0' then do;  ```
-    ```    ```
-    ```             putlog // "Failed to FORMAT " dsn " using dataset " template //;  ```
-    ```    ```
-    ```             window chose irow=5 rows=25  ```
-    ```               #5 @12 "Error encountered - Continue or stop and format " response $8. attr=underline;  ```
-    ```             display chose;  ```
-    ```             if response='stop' then do;  ```
-    ```                 put "Stopping datastep because of user request";  ```
-    ```                 stop;  ```
-    ```             end;  ```
-    ```             putlog "Continuing datastep processing even though an error was encountered";  ```
-    ```        end;  ```
-    ```    end;  ```
-    ```    ```
+    ```  Good question, nice presentation;  ```
     ```    ```
     ```  see  ```
-    ```  https://goo.gl/VxUB3g  ```
-    ```  https://communities.sas.com/t5/Base-SAS-Programming/making-the-same-format-in-every-dataset/m-p/390562  ```
+    ```  https://mail.google.com/mail/u/0/#inbox/15df6067fa4c4cfc  ```
+    ```    ```
+    ```    ```
+    ```  HAVE  ```
+    ```  ====  ```
+    ```       Up to 40 obs WORK.HAVE total obs=6  ```
+    ```    ```
+    ```       Obs    _NAME_    EFFECT       ESTIMATE     STDERR      PROBT  ```
+    ```    ```
+    ```        1      X_1      COL1          0.00029    0.001542    0.84858  ```
+    ```        2      X_1      Race         -0.12320    0.041150    0.00281  ```
+    ```        3      X_1      COL1*Race    -0.00072    0.002932    0.80644  ```
+    ```        4      X_10     COL1          0.03974    0.015330    0.00963  ```
+    ```        5      X_10     Race         -0.15440    0.053240    0.00380  ```
+    ```        6      X_10     COL1*Race     0.00913    0.025580    0.72127  ```
     ```    ```
     ```    ```
     ```    ```
-    ```  HAVE  (template dataset and three datasets to reformat like the template)  ```
-    ```  =========================================================================  ```
+    ```  WANT  (proc report output dataset)  ```
+    ```  ====  ```
+    ```  Up to 40 obs from havrpt total obs=2  ```
+    ```                                                                                           COL1_      COL1_      COL1_  ```
+    ```                                                        RACE_       RACE_      RACE_       RACE_      RACE_      RACE_  ```
+    ```  Obs    _NAME_    ESTIMATE     STDERR      PROBT     ESTIMATE     STDERR      PROBT     ESTIMATE     STDERR     PROBT     _BREAK_  ```
     ```    ```
-    ```  Template dataset and datasets we want reformat  ```
-    ```    ```
-    ```  META  ```
-    ```    ```
-    ```  Up to 40 obs WORK.META total obs=3  ```
-    ```    ```
-    ```  Obs    TEMPLATE     DSN  ```
-    ```    ```
-    ```   1     template    hav1st  ```
-    ```   2     template    hav2nd  ```
-    ```   3     template    hav3rd  ```
-    ```    ```
-    ```    ```
-    ```  DATASETS  ```
-    ```    ```
-    ```  DSNS      Variable    Type    Len    Format  ```
-    ```    ```
-    ```  TEMPLATE  NAME        Char      8    $CHAR8.  ```
-    ```  TEMPLATE  AGE         Num       8    2.  ```
-    ```    ```
-    ```  HAV1ST    NAME        Char      8    $32.  ```
-    ```  HAV1ST    AGE         Num       8    18.8  ```
-    ```    ```
-    ```  HAV2ND    NAME        Char      8    $8.  ```
-    ```  HAV2ND    AGE         Num       8    8.2  ```
-    ```    ```
-    ```  HAV3RD    NAME        Char      8    $CHAR12.  ```
-    ```  HAV3RD    AGE         Num       8    PERCENT.  ```
-    ```    ```
-    ```    ```
-    ```    ```
-    ```    ```
-    ```  WANT (set all formats to look like the template)  ```
-    ```  =================================================  ```
-    ```    ```
-    ```  DATASETS  ```
-    ```    ```
-    ```  DSNS      Variable    Type    Len    Format  ```
-    ```    ```
-    ```  TEMPLATE  NAME        Char      8    $CHAR8.  ```
-    ```  TEMPLATE  AGE         Num       8    2.  ```
-    ```    ```
-    ```  HAV1ST    NAME        Char      8    $CHAR8.  ```
-    ```  HAV1ST    AGE         Num       8    2.  ```
-    ```    ```
-    ```  HAV2ND    NAME        Char      8    $CHAR8.  ```
-    ```  HAV2ND    AGE         Num       8    2.  ```
-    ```    ```
-    ```  HAV3RD    NAME        Char      8    $CHAR8.  ```
-    ```  HAV3RD    AGE         Num       8    2.  ```
-    ```    ```
+    ```   1      X_1      0.000294    0.001542    0.84858     -.00072    0.002932    0.80644     -0.1232    0.04115    .002812  ```
+    ```   2      X_10     0.039740    0.015330    0.00963     0.00913    0.025580    0.72127     -0.1544    0.05324    .003801  ```
     ```    ```
     ```  *                _              _       _  ```
     ```   _ __ ___   __ _| | _____    __| | __ _| |_ __ _  ```
@@ -116,38 +69,23 @@ proc report can do more complex transposes than proc transpose?
     ```    ```
     ```  ;  ```
     ```    ```
-    ```  data meta;  ```
-    ```    input template$ dsn$;  ```
+    ```  data have;  ```
+    ```  retain _name_;  ```
+    ```  informat effect $10.;  ```
+    ```  input  ```
+    ```  _NAME_$ Effect$ Estimate StdErr Probt;  ```
     ```  cards4;  ```
-    ```  template hav1st  ```
-    ```  template hav2nd  ```
-    ```  template hav3rd  ```
+    ```  X_1 COL1 0.000294 0.001542 0.84858  ```
+    ```  X_1 Race -0.1232 0.04115 0.002812  ```
+    ```  X_1 COL1*Race -0.00072 0.002932 0.80644  ```
+    ```  X_10 COL1 0.03974 0.01533 0.009625  ```
+    ```  X_10 Race -0.1544 0.05324 0.003801  ```
+    ```  X_10 COL1*Race 0.00913 0.02558 0.721273  ```
     ```  ;;;;  ```
     ```  run;quit;  ```
     ```    ```
-    ```  data template;  ```
-    ```    set sashelp.class;  ```
-    ```    format name $char8. age 2.;  ```
-    ```    keep name age;  ```
-    ```  run;quit;  ```
-    ```    ```
-    ```  data hav1st;  ```
-    ```    set sashelp.class;  ```
-    ```    format name $32. age 18.8;  ```
-    ```    keep name age;  ```
-    ```  run;quit;  ```
-    ```    ```
-    ```  data hav2nd;  ```
-    ```    set sashelp.class;  ```
-    ```    format name $8. age 8.2;  ```
-    ```    keep name age;  ```
-    ```  run;quit;  ```
-    ```    ```
-    ```    ```
-    ```  data hav3rd;  ```
-    ```    set sashelp.class;  ```
-    ```    format name $char12. age percent.;  ```
-    ```    keep name age;  ```
+    ```  proc sort data=have out=havsrt;  ```
+    ```  by _name_;  ```
     ```  run;quit;  ```
     ```    ```
     ```  *          _       _   _  ```
@@ -158,54 +96,26 @@ proc report can do more complex transposes than proc transpose?
     ```    ```
     ```  ;  ```
     ```    ```
-    ```  data _null_;  ```
-    ```    ```
-    ```     * get template formats;  ```
-    ```     if _n_=0 then do;  ```
-    ```       %let rc=%sysfunc(dosubl('  ```
-    ```         proc contents data=work.template;  ```
-    ```         run;quit;  ```
-    ```         proc sql;  ```
-    ```            select catx(" ",variable,format) into :fmt separated by " "  ```
-    ```            from vars order by num;  ```
-    ```         ;quit;  ```
-    ```       );  ```
-    ```      end;  ```
-    ```    ```
-    ```      * get list of datasets;  ```
-    ```      set meta;  ```
-    ```         call symputx('dsn',dsn);  ```
-    ```      %let dsn=have2nd;  ```
-    ```      rc=dosubl('  ```
-    ```          proc datasets lib=work;  ```
-    ```              modify &dsn;  ```
-    ```              format &fmt;  ```
-    ```          run;quit;  ```
-    ```          %let rc_code=&syserr;  ```
-    ```          %let rctxt=&syserrortxt;  ```
-    ```        ');  ```
-    ```    ```
-    ```        if symget('rc_code') ne '0' then do;  ```
-    ```    ```
-    ```             syserr=symget('rc_code');     * probably do not need to do this;  ```
-    ```             syserrortext=symget('rctxt'); * probably do not need to do this;  ```
-    ```    ```
-    ```             putlog // "Failed to Create Dataset &dsn " //;  ```
-    ```    ```
-    ```             putlog "Error Code =" syserr //;  ```
-    ```             putlog "Error Text =" syserrortext //;  ```
-    ```    ```
-    ```             window chose irow=5 rows=25  ```
-    ```               #5 @12 "Error encountered - Continue or stop and create " response $8. attr=underline;  ```
-    ```             display chose;  ```
-    ```             if response='stop' then do;  ```
-    ```                 put "Stopping datastep because of user request";  ```
-    ```                 stop;  ```
-    ```             end;  ```
-    ```             putlog "Continuing datastep processing even though an error was encountered";  ```
-    ```        end;  ```
-    ```    end;  ```
-    ```    ```
+    ```  %utl_submit_wps64('  ```
+    ```  libname wrk sas7bdat "%sysfunc(pathname(work))";  ```
+    ```  proc report data=wrk.havsrt  nowd missing  ```
+    ```         out=havrpt(  ```
+    ```             rename=(  ```
+    ```                _C1_= Estimate  ```
+    ```                _C2_=StdErr  ```
+    ```                _C3_= Probt  ```
+    ```                _C4_=Race_Estimate  ```
+    ```                _C5_=Race_StdErr  ```
+    ```                _C6_=Race_Probt  ```
+    ```                _C7_=COL1_Race_Estimate  ```
+    ```                _C8_=COL1_Race_StdErr  ```
+    ```                _C9_=COL1_Race_Probt));  ```
+    ```  by _name_;  ```
+    ```  cols effect, (estimate stderr probt);  ```
+    ```  define effect   / across;  ```
+    ```  define estimate / sum ;  ```
+    ```  define stderr   / sum ;  ```
+    ```  define probt    / sum ;  ```
     ```  run;quit;  ```
-    ```    ```
+    ```  ');  ```
     ```    ```
