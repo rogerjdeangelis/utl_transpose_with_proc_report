@@ -1,0 +1,58 @@
+*                _              _       _
+ _ __ ___   __ _| | _____    __| | __ _| |_ __ _
+| '_ ` _ \ / _` | |/ / _ \  / _` |/ _` | __/ _` |
+| | | | | | (_| |   <  __/ | (_| | (_| | || (_| |
+|_| |_| |_|\__,_|_|\_\___|  \__,_|\__,_|\__\__,_|
+
+;
+
+data have;
+retain _name_;
+informat effect $10.;
+input
+_NAME_$ Effect$ Estimate StdErr Probt;
+cards4;
+X_1 COL1 0.000294 0.001542 0.84858
+X_1 Race -0.1232 0.04115 0.002812
+X_1 COL1*Race -0.00072 0.002932 0.80644
+X_10 COL1 0.03974 0.01533 0.009625
+X_10 Race -0.1544 0.05324 0.003801
+X_10 COL1*Race 0.00913 0.02558 0.721273
+;;;;
+run;quit;
+
+proc sort data=have out=havsrt;
+by _name_;
+run;quit;
+
+*          _       _   _
+ ___  ___ | |_   _| |_(_) ___  _ __
+/ __|/ _ \| | | | | __| |/ _ \| '_ \
+\__ \ (_) | | |_| | |_| | (_) | | | |
+|___/\___/|_|\__,_|\__|_|\___/|_| |_|
+
+;
+
+%utl_submit_wps64('
+libname wrk sas7bdat "%sysfunc(pathname(work))";
+proc report data=wrk.havsrt  nowd missing
+       out=havrpt(
+           rename=(
+              _C1_= Estimate
+              _C2_=StdErr
+              _C3_= Probt
+              _C4_=Race_Estimate
+              _C5_=Race_StdErr
+              _C6_=Race_Probt
+              _C7_=COL1_Race_Estimate
+              _C8_=COL1_Race_StdErr
+              _C9_=COL1_Race_Probt));
+by _name_;
+cols effect, (estimate stderr probt);
+define effect   / across;
+define estimate / sum ;
+define stderr   / sum ;
+define probt    / sum ;
+run;quit;
+');
+
